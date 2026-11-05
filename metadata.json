@@ -1,0 +1,7 @@
+{
+  "name": "LLM Arena - AI Model Racing & Benchmark",
+  "description": "Real-time multi-model AI arena with simultaneous streaming, blind voting, latency and token metrics, and community leaderboard.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+

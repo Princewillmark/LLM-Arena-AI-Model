@@ -1,0 +1,11 @@
+specVersion: "v1alpha"
+serviceId: "llm-arena-service"
+location: "us-central1"
+schema:
+  source: "./schema"
+  datasource:
+    postgresql:
+      database: "llm_arena_db"
+      cloudSql:
+        instanceId: "llm-arena-pg-instance"
+connectorDirs: ["./connector"]

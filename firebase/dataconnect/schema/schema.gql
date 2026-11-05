@@ -1,0 +1,91 @@
+# LLM Arena - Firebase SQL Connect Schema
+# Cloud SQL for PostgreSQL Data Source
+
+type User @table {
+  id: UUID! @default(expr: "uuid_generate_v4()")
+  firebaseUid: String! @unique
+  displayName: String
+  email: String
+  photoUrl: String
+  accountStatus: String! @default(value: "active")
+  createdAt: Timestamp! @default(expr: "request.time")
+  updatedAt: Timestamp! @default(expr: "request.time")
+}
+
+type Competition @table {
+  id: UUID! @default(expr: "uuid_generate_v4()")
+  ownerUid: String!
+  prompt: String!
+  systemInstruction: String
+  selectedModels: [String!]!
+  status: String! @default(value: "pending") # pending, running, completed, cancelled
+  category: String @default(value: "General") # Coding, Reasoning, Mathematics, Writing, Research, Business, General
+  visibility: String! @default(value: "public") # public, private, unlisted
+  createdAt: Timestamp! @default(expr: "request.time")
+  completedAt: Timestamp
+}
+
+type ModelResponse @table {
+  id: UUID! @default(expr: "uuid_generate_v4()")
+  competitionId: UUID!
+  modelId: String!
+  provider: String!
+  responseText: String!
+  responseStatus: String! @default(value: "streaming") # streaming, completed, failed, cancelled
+  timeToFirstTokenMs: Int
+  totalDurationMs: Int
+  promptTokens: Int
+  completionTokens: Int
+  tokensPerSecond: Float
+  reportedCost: Float
+  costSource: String @default(value: "provider_reported") # provider_reported, estimated, unavailable
+  errorMessage: String
+  createdAt: Timestamp! @default(expr: "request.time")
+  completedAt: Timestamp
+}
+
+type Vote @table {
+  id: UUID! @default(expr: "uuid_generate_v4()")
+  competitionId: UUID!
+  firebaseUid: String!
+  selectedResponseId: UUID
+  voteType: String! # model_a, model_b, model_c, tie, both_bad
+  createdAt: Timestamp! @default(expr: "request.time")
+}
+
+type ModelStatistic @table {
+  modelId: String! @unique
+  provider: String!
+  displayName: String!
+  totalVotes: Int! @default(value: 0)
+  totalWins: Int! @default(value: 0)
+  totalCompetitions: Int! @default(value: 0)
+  averageTimeToFirstToken: Float! @default(value: 0.0)
+  averageResponseDuration: Float! @default(value: 0.0)
+  totalReportedCost: Float! @default(value: 0.0)
+  eloScore: Int! @default(value: 1200)
+  updatedAt: Timestamp! @default(expr: "request.time")
+}
+
+type SavedPrompt @table {
+  id: UUID! @default(expr: "uuid_generate_v4()")
+  firebaseUid: String!
+  title: String!
+  prompt: String!
+  category: String! @default(value: "General")
+  createdAt: Timestamp! @default(expr: "request.time")
+  updatedAt: Timestamp! @default(expr: "request.time")
+}
+
+type ModelCatalogItem @table {
+  modelId: String! @unique
+  provider: String!
+  displayName: String!
+  available: Boolean! @default(value: true)
+  capabilities: [String!]!
+  inputPricing: Float! # USD per 1M tokens
+  outputPricing: Float! # USD per 1M tokens
+  contextWindow: Int! @default(value: 128000)
+  description: String
+  pricingUpdatedAt: Timestamp! @default(expr: "request.time")
+}

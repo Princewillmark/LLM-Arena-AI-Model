@@ -1,0 +1,126 @@
+# Mutations for LLM Arena Firebase SQL Connect
+
+mutation UpsertUser(
+  $firebaseUid: String!
+  $displayName: String
+  $email: String
+  $photoUrl: String
+) @auth(level: USER) {
+  user_upsert(
+    key: { firebaseUid: $firebaseUid }
+    data: {
+      displayName: $displayName
+      email: $email
+      photoUrl: $photoUrl
+      accountStatus: "active"
+      updatedAt_expr: "request.time"
+    }
+  ) {
+    id
+    firebaseUid
+    displayName
+  }
+}
+
+mutation CreateCompetition(
+  $ownerUid: String!
+  $prompt: String!
+  $systemInstruction: String
+  $selectedModels: [String!]!
+  $category: String
+  $visibility: String = "public"
+) @auth(level: USER) {
+  competition_insert(
+    data: {
+      ownerUid: $ownerUid
+      prompt: $prompt
+      systemInstruction: $systemInstruction
+      selectedModels: $selectedModels
+      category: $category
+      status: "running"
+      visibility: $visibility
+    }
+  ) {
+    id
+    createdAt
+  }
+}
+
+mutation SaveModelResponse(
+  $competitionId: UUID!
+  $modelId: String!
+  $provider: String!
+  $responseText: String!
+  $responseStatus: String!
+  $timeToFirstTokenMs: Int
+  $totalDurationMs: Int
+  $promptTokens: Int
+  $completionTokens: Int
+  $tokensPerSecond: Float
+  $reportedCost: Float
+  $costSource: String
+  $errorMessage: String
+) @auth(level: NO_ACCESS) { # Admin only
+  modelResponse_insert(
+    data: {
+      competitionId: $competitionId
+      modelId: $modelId
+      provider: $provider
+      responseText: $responseText
+      responseStatus: $responseStatus
+      timeToFirstTokenMs: $timeToFirstTokenMs
+      totalDurationMs: $totalDurationMs
+      promptTokens: $promptTokens
+      completionTokens: $completionTokens
+      tokensPerSecond: $tokensPerSecond
+      reportedCost: $reportedCost
+      costSource: $costSource
+      errorMessage: $errorMessage
+      completedAt_expr: "request.time"
+    }
+  ) {
+    id
+  }
+}
+
+mutation SubmitVote(
+  $competitionId: UUID!
+  $firebaseUid: String!
+  $selectedResponseId: UUID
+  $voteType: String!
+) @auth(level: USER) {
+  vote_insert(
+    data: {
+      competitionId: $competitionId
+      firebaseUid: $firebaseUid
+      selectedResponseId: $selectedResponseId
+      voteType: $voteType
+    }
+  ) {
+    id
+    createdAt
+  }
+}
+
+mutation CreateSavedPrompt(
+  $firebaseUid: String!
+  $title: String!
+  $prompt: String!
+  $category: String!
+) @auth(level: USER) {
+  savedPrompt_insert(
+    data: {
+      firebaseUid: $firebaseUid
+      title: $title
+      prompt: $prompt
+      category: $category
+    }
+  ) {
+    id
+    createdAt
+  }
+}
+
+mutation DeleteSavedPrompt($id: UUID!) @auth(level: USER) {
+  savedPrompt_delete(id: $id)
+}

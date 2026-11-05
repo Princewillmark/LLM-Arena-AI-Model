@@ -1,0 +1,103 @@
+# Queries for LLM Arena Firebase SQL Connect
+
+query GetModelCatalog @auth(level: PUBLIC) {
+  modelCatalogItems(orderBy: [{ displayName: ASC }]) {
+    modelId
+    provider
+    displayName
+    available
+    capabilities
+    inputPricing
+    outputPricing
+    contextWindow
+    description
+  }
+}
+
+query GetLeaderboard(
+  $category: String
+  $orderByWins: OrderDirection = DESC
+) @auth(level: PUBLIC) {
+  modelStatistics(
+    orderBy: [{ eloScore: DESC }, { totalWins: $orderByWins }]
+  ) {
+    modelId
+    provider
+    displayName
+    totalVotes
+    totalWins
+    totalCompetitions
+    averageTimeToFirstToken
+    averageResponseDuration
+    totalReportedCost
+    eloScore
+    updatedAt
+  }
+}
+
+query GetUserCompetitions($ownerUid: String!) @auth(level: USER) {
+  competitions(
+    where: { ownerUid: { eq: $ownerUid } }
+    orderBy: [{ createdAt: DESC }]
+  ) {
+    id
+    ownerUid
+    prompt
+    systemInstruction
+    selectedModels
+    status
+    category
+    visibility
+    createdAt
+    completedAt
+  }
+}
+
+query GetCompetitionDetails($id: UUID!) @auth(level: PUBLIC) {
+  competition(id: $id) {
+    id
+    ownerUid
+    prompt
+    selectedModels
+    status
+    category
+    createdAt
+    completedAt
+  }
+  modelResponses(where: { competitionId: { eq: $id } }) {
+    id
+    modelId
+    provider
+    responseText
+    responseStatus
+    timeToFirstTokenMs
+    totalDurationMs
+    promptTokens
+    completionTokens
+    tokensPerSecond
+    reportedCost
+    costSource
+    createdAt
+  }
+  votes(where: { competitionId: { eq: $id } }) {
+    id
+    firebaseUid
+    selectedResponseId
+    voteType
+    createdAt
+  }
+}
+
+query GetSavedPrompts($firebaseUid: String!) @auth(level: USER) {
+  savedPrompts(
+    where: { firebaseUid: { eq: $firebaseUid } }
+    orderBy: [{ updatedAt: DESC }]
+  ) {
+    id
+    title
+    prompt
+    category
+    createdAt
+    updatedAt
+  }
+}
